@@ -16,14 +16,12 @@ COPY pkg/ pkg/
 COPY core/ core/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on \
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} GO111MODULE=on \
     go build -o kube-webhook-certgen main.go
 
 
 FROM gcr.io/distroless/base
 WORKDIR /
 COPY --from=builder /workspace/kube-webhook-certgen /kube-webhook-certgen
-
-ENTRYPOINT ["/manager"]
-COPY kube-webhook-certgen /kube-webhook-certgen
 ENTRYPOINT ["/kube-webhook-certgen"]

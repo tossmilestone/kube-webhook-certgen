@@ -51,7 +51,7 @@ func New(kubeconfig string) *k8s {
 // PatchWebhookConfigurations will patch validatingWebhook and mutatingWebhook clientConfig configurations with
 // the provided ca data. If failurePolicy is provided, patch all webhooks with this value
 func (k8s *k8s) PatchWebhookConfigurations(
-	configurationNames string, ca []byte,
+	ns, configurationNames string, ca []byte,
 	failurePolicy *admissionv1beta1.FailurePolicyType,
 	patchMutating bool, patchValidating bool, crds []string) {
 
@@ -118,6 +118,7 @@ func (k8s *k8s) PatchWebhookConfigurations(
 			log.WithField("err", err).Fatal("failed getting CRD")
 			continue
 		}
+		crdObject.Spec.Conversion.Webhook.ClientConfig.Service.Namespace = ns
 		crdObject.Spec.Conversion.Webhook.ClientConfig.CABundle = ca
 		if err := k8s.client.Update(context.TODO(), &crdObject); err != nil {
 			log.WithField("err", err).Fatal("failed patch CRD")
